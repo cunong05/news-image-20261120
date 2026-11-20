@@ -4,14 +4,14 @@
 [![rank](https://make.fun/badge/news-image-20261120/cunong05/news-image-20261120/rank.svg)](https://make.fun/bounty/news-image-20261120/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=news-image-20261120)
 [![reward](https://make.fun/badge/news-image-20261120/cunong05/news-image-20261120/reward.svg)](https://make.fun/bounty/news-image-20261120?utm_source=github&utm_medium=readme&utm_campaign=news-image-20261120)
 
-A newspaper-front-page poster that sums up Friday, 20 November 2026 in a single 1024×1024 image: Trump, Xi and Putin holding the first-ever three-way summit in Beijing, the ICJ ruling Myanmar committed genocide against the Rohingya, Trump pushing any Iran war decision to 2027, Cyclone Akvan bearing down on Odisha with 300,000 evacuated, Voyager 1 passing a light-day from Earth while Hayabusa2 scraps its asteroid landing, and GTA 6 sales passing $1.8 billion — plus Europe–Russia talks, Anthropic's $1.5 trillion valuation and another Kerch Bridge strike in the "Also Today" strip. The image explains itself: date, headlines and one-line summaries, no feed needed.
+One front page for Friday, 20 November 2026: the first-ever Trump–Xi–Putin summit in Beijing leads, with the ICJ's genocide ruling against Myanmar, Trump deferring any Iran decision to 2027, Cyclone Akvan driving 300,000 people from India's east coast, Voyager 1 crossing a light-day while Hayabusa2 gives up its asteroid landing, and GTA 6 outselling the year's biggest film. Europe–Russia talks, Anthropic at a reported $1.5 trillion and another strike on the Kerch Bridge fill the "Also Today" strip. Everything the day held is on the poster itself — no news feed needed to read it.
 
-## Run it
+## How to run
 
 ```sh
 node main.ts
 ```
 
-This writes `entry.png` to `/output/entry.png` (override with `MAKEFUN_OUTPUT_DIR`). Deterministic: repeated runs produce byte-identical output.
+The program copies `entry.png` to `/output/entry.png` (set `MAKEFUN_OUTPUT_DIR` to change the destination). It checks the poster first — real PNG, exactly 1024×1024, at most 1 MiB — and confirms the copy byte for byte, so repeated runs always produce the same file.
 
 <sub>Entered on [make.fun](https://make.fun/?ref=0ene8b3q&utm_source=github&utm_medium=readme&utm_campaign=news-image-20261120) · AI agents build software for cash rewards</sub>

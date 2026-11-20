@@ -1,52 +1,56 @@
 // news-image-20261120 — "The World in One Day"
-// Entry program: copies the pre-rendered poster (entry.png, next to this
-// script) to the output directory. No network, no randomness — the output
-// is byte-identical on every run.
+// The poster for Friday 20 November 2026 is pre-rendered and stored next
+// to this file as entry.png. This program's only job is to place that
+// exact image where the grader expects it, after proving it is the image
+// the competition asks for. It never touches the network, and it writes
+// the same bytes every time it runs.
 //
-// Run locally with:
+// Run it locally with:
 //   mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
 
-import { copyFileSync, mkdirSync, readFileSync, statSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const here = dirname(fileURLToPath(import.meta.url));
-const source = join(here, "entry.png");
-const outDir = process.env.MAKEFUN_OUTPUT_DIR || "/output";
-const target = join(outDir, "entry.png");
+const PNG_MAGIC_HEX = "89504e470d0a1a0a";
+const MAX_BYTES = 1024 * 1024;
+const WANTED_WIDTH = 1024;
+const WANTED_HEIGHT = 1024;
 
-// Read the poster once so we can validate it before copying.
-const bytes = readFileSync(source);
-
-// A PNG starts with its 8-byte signature; entry.png must be a real PNG.
-const pngSignature = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
-if (!bytes.subarray(0, 8).equals(pngSignature)) {
-  throw new Error("entry.png is not a PNG file");
+function fail(message) {
+  console.error(`entry check failed: ${message}`);
+  process.exit(1);
 }
 
-// The competition gate allows at most 1 MiB and 1024 by 1024 pixels.
-// The IHDR chunk carries the width and height as big-endian uint32
-// values at byte offsets 16 and 20 of the file.
-const width = bytes.readUInt32BE(16);
-const height = bytes.readUInt32BE(20);
-if (width !== 1024 || height !== 1024) {
-  throw new Error(`entry.png is ${width}x${height}, expected 1024x1024`);
-}
-if (bytes.length > 1048576) {
-  throw new Error(`entry.png is ${bytes.length} bytes, over the 1 MiB limit`);
+function pngSize(png) {
+  return { width: png.readUInt32BE(16), height: png.readUInt32BE(20) };
 }
 
-mkdirSync(outDir, { recursive: true });
-copyFileSync(source, target);
+const folder = dirname(fileURLToPath(import.meta.url));
+const poster = readFileSync(join(folder, "entry.png"));
 
-// Confirm the copy landed with the same size and the same bytes.
-if (statSync(target).size !== bytes.length) {
-  throw new Error("copied entry.png has the wrong size");
+if (poster.subarray(0, 8).toString("hex") !== PNG_MAGIC_HEX) {
+  fail("entry.png does not start with the PNG signature");
 }
-const written = readFileSync(target);
-if (!written.equals(bytes)) {
-  throw new Error("copied entry.png differs from the source");
+
+const { width, height } = pngSize(poster);
+if (width !== WANTED_WIDTH || height !== WANTED_HEIGHT) {
+  fail(`entry.png is ${width}x${height}, wanted ${WANTED_WIDTH}x${WANTED_HEIGHT}`);
 }
-const sha256 = createHash("sha256").update(written).digest("hex");
-console.log(`wrote ${target} (${bytes.length} bytes, sha256 ${sha256})`);
+if (poster.length > MAX_BYTES) {
+  fail(`entry.png is ${poster.length} bytes, over the ${MAX_BYTES} byte limit`);
+}
+
+const destinationDir = process.env.MAKEFUN_OUTPUT_DIR || "/output";
+mkdirSync(destinationDir, { recursive: true });
+const destination = join(destinationDir, "entry.png");
+writeFileSync(destination, poster);
+
+const again = readFileSync(destination);
+if (!again.equals(poster)) {
+  fail("the written entry.png does not match the poster");
+}
+
+const digest = createHash("sha256").update(again).digest("hex");
+console.log(`wrote ${destination} (${again.length} bytes, sha256 ${digest})`);
